@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+    <html lang = "en">
+        <head>
+        <title>HTML/javascript platformer</title>
+<meta charset = "utf-8">
+    </head>
+<body>
+    <canvas id = "canvas" width = "600" height = "400" style = "position: absolute;left: 0px;top:0px;"></canvas>
+<script>
+        var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+var body = document.body;
+var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39;
+
+var keys = [];
+var blocks = [];
+var lavas = [];
+var portals = [];
+var currentLevel = 0;
+var loadLev = false;
+var blockSize = 10;
+var cam = {
+    x: 0,
+    y: 0,
+};
+var levelBitmaps = [
+    /*
+                  # = block;
+                  p = portal;
+                  l = lava;
+                  */
+    [
+
+        "###########################################################################################",
+        "#                                                                                         #",
+        "#                                                                                         #",
+        "#                                                                                         #",
+        "#                                                                                         #",
+        "#                                                                                         #",
+        "#                                                                                         #",
+        "#                                                                                         #",
+        "#                                                                                         #",
+        "#                                                                                         #",
+        "#          ####      ####                 ####    ####                     ####           #",
+        "#                                                                  ####                   #",
+        "#   ####                   ####    ####                    ####                           #",
+        "#@                                                                                       p#",
+        "###llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll##",
+    ],
+    [
+        "@",
+        "##########"
+    ]
+];
+var rectCollision = function(obj1, obj2) {
+    return obj1.x + blockSize > obj2.x &&
+        obj1.x < obj2.x + blockSize &&
+        obj1.y + blockSize > obj2.y &&
+        obj1.y < obj2.y + blockSize;
+};
+var Player = function() {
+    this.x = 0;
+    this.y = 0;
+    this.xv = 0;
+    this.yv = 0;
+};
+Player.prototype.moveX = function() {
+    if(keys[LEFT]) {
+        this.xv -= 0.4;
+    }
+    if(keys[RIGHT]) {
+        this.xv += 0.4;
+    }
+    this.x += Math.round(this.xv);
+    this.xv *= 0.9;
+};
+Player.prototype.moveY = function() {
+    if(keys[UP] && player.yv === 0) {
+        this.yv = -8;
+    }
+    this.yv += 0.4;
+    this.y += Math.round(this.yv);
+};
+Player.prototype.display = function() {
+    ctx.fillStyle = "gray";
+    ctx.fillRect(this.x, this.y, blockSize, blockSize);
+};
+var player = new Player();//makes a new player
+
+var Block = function(x, y) {
+    this.x = x;
+    this.y = y;
+};
+Block.prototype.collideX = function() {
+    if(rectCollision(this, player)) {
+        if(player.xv > 0) {
+            player.x = this.x - blockSize;
+        }
+        if(player.xv < 0) {
+            player.x = this.x + blockSize;
+        }
+        player.xv = 0;
+    }
+};
+Block.prototype.collideY = function() {
+    if(rectCollision(this, player)) {
+        if(player.yv > 0) {
+            player.y = this.y - blockSize;
+            player.yv = 0;
+        }
+        if(player.yv < 0) {
+            player.y = this.y + blockSize;
+            player.yv = 0.1;
+        }
+    }
+
+};
+Block.prototype.display = function() {
+    ctx.fillStyle = "rgb(0, 0, 0)";
+    ctx.fillRect(this.x, this.y, blockSize, blockSize);
+};
+var Lava = function(x, y) {
+    this.x = x;
+    this.y = y;
+};
+Lava.prototype.collide = function() {
+    if(rectCollision(this, player)) {
+        loadLev = true;
+    }
+};
+Lava.prototype.display = function() {
+    ctx.fillStyle = "red";
+    ctx.fillRect(this.x, this.y, blockSize, blockSize);
+};
+var Portal = function(x, y) {
+    this.x = x;
+    this.y = y;
+};
+Portal.prototype.collide = function() {
+    if(rectCollision(this, player)) {
+        loadLev = true;
+        currentLevel ++;
+    }
+};
+Portal.prototype.display = function() {
+    ctx.fillStyle = "rgb(0, 255, 255)";
+    ctx.fillRect(this.x, this.y, blockSize, blockSize);
+};
+var loadLevel = function() {
+    blocks = [];
+    lavas = [];
+    portals = [];
+    for(var i = 0; i < levelBitmaps[currentLevel].length; i ++) {
+        for(var j = 0; j < levelBitmaps[currentLevel][i].length; j ++) {
+            var X = j * blockSize;
+            var Y = i * blockSize;
+            switch(levelBitmaps[currentLevel][i][j]) {
+                case "#":
+                    blocks.push(new Block(X, Y));
+                    break;
+                case "l":
+                    lavas.push(new Lava(X, Y));
+                    break;
+                case "p"://if the computer finds a "p", do this:
+                    portals.push(new Portal(X, Y));
+                    break;
+                case "@":
+                    player.x = X;
+                    player.y = Y;
+            }
+        }
+    }
+};
+loadLevel();//load the level
+setInterval(function() {
+    try{//try this stuff:
+        ctx.save();//pushMatrix();
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);//background(0, 0, 0, 0);
+
+        cam.x = cam.x + (player.x - cam.x) * 0.1;//cam.x = lerp(cam.x, player.x, 0.1);
+        cam.y = cam.y + (player.y - cam.y) * 0.1;//cam.y = lerp(cam.y, player.y, 0.1);
+        ctx.translate(canvas.width / 2 - cam.x, canvas.height / 2 - cam.y);//translate(width / 2 - cam.x, height / 2 - cam.y)
+        player.moveX();
+        for(var i = 0; i < blocks.length; i ++) {
+            blocks[i].collideX();
+        }
+        player.moveY();
+        for(var i = 0; i < blocks.length; i ++) {
+            blocks[i].collideY();
+        }
+        player.display();
+        for(var i = 0; i < blocks.length; i ++) {
+            blocks[i].display();
+        }
+        if(loadLev) {
+            loadLevel();
+            loadLev = false;
+        }
+        for(var i = 0; i < lavas.length; i ++) {
+            lavas[i].display();
+            lavas[i].collide();
+        }
+        for(var i = 0; i < portals.length; i ++) {
+            portals[i].display();
+            portals[i].collide();
+        }
+        ctx.restore();
+        ctx.fillStyle = "black";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "bottom";
+        ctx.font = "16px sans-serif";
+    } catch(err) {
+        console.error(err);
+    }
+}, 1000 / 60);
+body.addEventListener("keydown", function(event) {//keyReleased = function() {};
+    event.preventDefault();
+    keys[event.keyCode] = true;
+});
+body.addEventListener("keyup", function(event) {
+    event.preventDefault();
+    keys[event.keyCode] = false;
+});
+</script><!--the game code-->
+</body>
+</html>
