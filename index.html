@@ -7,6 +7,32 @@
 <body>
     <canvas id = "canvas" width = "600" height = "400" style = "position: absolute;left: 0px;top:0px;"></canvas>
 <script>
+    
+    var loadLevel = function() {
+        blocks = [];
+        lavas = [];
+        portals = [];
+        for(let i = 0; i < levelBitmaps[currentLevel].length; i ++) {
+            for(let j = 0; j < levelBitmaps[currentLevel][i].length; j ++) {
+                let X = j * blockSize;
+                let Y = i * blockSize;
+                switch(levelBitmaps[currentLevel][i][j]) {
+                    case "#":
+                        blocks.push(new Block(X, Y));
+                        break;
+                    case "l":
+                        lavas.push(new Lava(X, Y));
+                        break;
+                    case "p"://if the computer finds a "p", do this:
+                        portals.push(new Portal(X, Y));
+                        break;
+                    case "@":
+                        player.x = X;
+                        player.y = Y;
+                }
+            }
+        }
+    };
         {
             let canvas = document.getElementById("canvas");
     let ctx = canvas.getContext("2d");
@@ -149,31 +175,6 @@
     Portal.prototype.display = function() {
         ctx.fillStyle = "rgb(0, 255, 255)";
         ctx.fillRect(this.x, this.y, blockSize, blockSize);
-    };
-    var loadLevel = function() {
-        blocks = [];
-        lavas = [];
-        portals = [];
-        for(let i = 0; i < levelBitmaps[currentLevel].length; i ++) {
-            for(let j = 0; j < levelBitmaps[currentLevel][i].length; j ++) {
-                let X = j * blockSize;
-                let Y = i * blockSize;
-                switch(levelBitmaps[currentLevel][i][j]) {
-                    case "#":
-                        blocks.push(new Block(X, Y));
-                        break;
-                    case "l":
-                        lavas.push(new Lava(X, Y));
-                        break;
-                    case "p"://if the computer finds a "p", do this:
-                        portals.push(new Portal(X, Y));
-                        break;
-                    case "@":
-                        player.x = X;
-                        player.y = Y;
-                }
-            }
-        }
     };
     loadLevel();
     var i = setInterval(function() {
