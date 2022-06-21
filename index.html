@@ -1,234 +1,234 @@
 <!DOCTYPE html>
-    <html lang = "en">
-        <head>
-        <title>HTML/javascript platformer</title>
-<meta charset = "utf-8">
-    </head>
-<body>
-    <canvas id = "canvas" width = "600" height = "400" style = "position: absolute;left: 0px;top:0px;"></canvas>
-<script>
-        {
-            
-    
-    var loadLevel = function() {
-        blocks = [];
-        lavas = [];
-        portals = [];
-        for(var i = 0; i < levelBitmaps[currentLevel].length; i ++) {
-            for(var j = 0; j < levelBitmaps[currentLevel][i].length; j ++) {
-                var X = j * blockSize;
-                var Y = i * blockSize;
-                switch(levelBitmaps[currentLevel][i][j]) {
-                    case "#":
-                        blocks.push(new Block(X, Y));
-                        break;
-                    case "l":
-                        lavas.push(new Lava(X, Y));
-                        break;
-                    case "p"://if the computer finds a "p", do this:
-                        portals.push(new Portal(X, Y));
-                        break;
-                    case "@":
-                        player.x = X;
-                        player.y = Y;
-                }
-            }
-        }
-    };
-            var canvas = document.getElementById("canvas");
-    var ctx = canvas.getContext("2d");
-    var body = document.body;
-    var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39;
-
-    var keys = [];
-    var blocks = [];
-    var lavas = [];
-    var portals = [];
-    var currentLevel = 0;
-    var loadLev = false;
-    var blockSize = 10;
-    var cam = {
-        x: 0,
-        y: 0,
-    };
-    var levelBitmaps = [
-        /*
-                      # = block;
-                      p = portal;
-                      l = lava;
-                      */
-        [
-
-            "###########################################################################################",
-            "#                                                                                         #",
-            "#                                                                                         #",
-            "#                                                                                         #",
-            "#                                                                                         #",
-            "#                                                                                         #",
-            "#                                                                                         #",
-            "#                                                                                         #",
-            "#                                                                                         #",
-            "#                                                                                         #",
-            "#          ####      ####                 ####    ####                     ####           #",
-            "#                                                                  ####                   #",
-            "#   ####                   ####    ####                    ####                           #",
-            "#@                                                                                       p#",
-            "###llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll##",
-        ],
-        [
-            "@",
-            "##########                                    ####################",
-            "                ##################                                        #",
-        ]
-    ];
-    var rectCollision = function(obj1, obj2) {
-        return obj1.x + blockSize > obj2.x &&
-            obj1.x < obj2.x + blockSize &&
-            obj1.y + blockSize > obj2.y &&
-            obj1.y < obj2.y + blockSize;
-    };
-    var Player = function() {
-        this.x = 0;
-        this.y = 0;
-        this.xv = 0;
-        this.yv = 0;
-    };
-    Player.prototype.moveX = function() {
-        if(keys[LEFT]) {
-            this.xv -= 0.4;
-        }
-        if(keys[RIGHT]) {
-            this.xv += 0.4;
-        }
-        this.x += Math.round(this.xv);
-        this.xv *= 0.9;
-    };
-    Player.prototype.moveY = function() {
-        if(keys[UP] && player.yv === 0) {
-            this.yv = -8;
-        }
-        this.yv += 0.4;
-        this.y += Math.round(this.yv);
-        if(this.y >= (levelBitmaps[currentLevel].length * blockSize)) {
-            loadLevel = true;
-        }
-    };
-    Player.prototype.display = function() {
-        ctx.fillStyle = "gray";
-        ctx.fillRect(this.x, this.y, blockSize, blockSize);
-    };
-    var player = new Player();
-    var Block = function(x, y) {
-        this.x = x;
-        this.y = y;
-    };
-    Block.prototype.collideX = function() {
-        if(rectCollision(this, player)) {
-            if(player.xv > 0) {
-                player.x = this.x - blockSize;
-            }
-            if(player.xv < 0) {
-                player.x = this.x + blockSize;
-            }
-            player.xv = 0;
-        }
-    };
-    Block.prototype.collideY = function() {
-        if(rectCollision(this, player)) {
-            if(player.yv > 0) {
-                player.y = this.y - blockSize;
-                player.yv = 0;
-            }
-            if(player.yv < 0) {
-                player.y = this.y + blockSize;
-                player.yv = 0.1;
-            }
-        }
-
-    };
-    Block.prototype.display = function() {
-        ctx.fillStyle = "rgb(0, 0, 0)";
-        ctx.fillRect(this.x, this.y, blockSize, blockSize);
-    };
-    var Lava = function(x, y) {
-        this.x = x;
-        this.y = y;
-    };
-    Lava.prototype.collide = function() {
-        if(rectCollision(this, player)) {
-            loadLev = true;
-        }
-    };
-    Lava.prototype.display = function() {
-        ctx.fillStyle = "red";
-        ctx.fillRect(this.x, this.y, blockSize, blockSize);
-    };
-    var Portal = function(x, y) {
-        this.x = x;
-        this.y = y;
-    };
-    Portal.prototype.collide = function() {
-        if(rectCollision(this, player)) {
-            loadLev = true;
-            currentLevel ++;
-        }
-    };
-    Portal.prototype.display = function() {
-        ctx.fillStyle = "rgb(0, 255, 255)";
-        ctx.fillRect(this.x, this.y, blockSize, blockSize);
-    };
-    loadLevel();
-    var i = setInterval(function() {
-        try{
-            ctx.save();
-            ctx.fillStyle = "white";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            cam.x = cam.x + (player.x - cam.x) * 0.1;
-            cam.y = cam.y + (player.y - cam.y) * 0.1;
-            ctx.translate(canvas.width / 2 - cam.x, canvas.height / 2 - cam.y);
-            player.moveX();
-            for(var i = 0; i < blocks.length; i ++) {
-                blocks[i].collideX();
-            }
-            player.moveY();
-            for(var i = 0; i < blocks.length; i ++) {
-                blocks[i].collideY();
-            }
-            player.display();
-            for(var i = 0; i < blocks.length; i ++) {
-                blocks[i].display();
-            }
-            if(loadLev) {
-                loadLevel();
-                loadLev = false;
-            }
-            for(var i = 0; i < lavas.length; i ++) {
-                lavas[i].display();
-                lavas[i].collide();
-            }
-            for(var i = 0; i < portals.length; i ++) {
-                portals[i].display();
-                portals[i].collide();
-            }
-            ctx.restore();
-            ctx.fillStyle = "black";
-            ctx.textAlign = "left";
-            ctx.textBaseline = "bottom";
-            ctx.font = "16px sans-serif";
-        } catch(err) {
-            console.error(err);
-            clearInterval(i)
-        }
-    }, 1000 / 60);
-    body.addEventListener("keydown", function(event) {
-        event.preventDefault();
-        keys[event.keyCode] = true;
-    });
-    body.addEventListener("keyup", function(event) {
-        event.preventDefault();
-        keys[event.keyCode] = false;
-    });
-        }
-</script><!--the game code-->
-</body>
+<html lang = "en">
+	<head>
+		<title>HTML/javascript platformer</title>
+		<meta charset = "utf-8">
+	</head>
+	<body>
+		<canvas id = "canvas" width = "600" height = "400" style = "position: absolute;left: 0px;top:0px;"></canvas>
+		<script>
+			var canvas = document.getElementById("canvas");
+			var ctx = canvas.getContext("2d");
+			var body = document.body;
+			var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39;//keyCode shortcuts
+			
+			var keys = [];//a array to store the keyCodes
+			var blocks = [];//a array to store the blocks
+			var lavas = [];//a array to store the lavas
+			var portals = [];//a array to store the portals
+			var currentLevel = 1;//the current level
+			var loadLev = false;//does the computer need to load the level?
+			var blockSize = 10;//the block size
+			var cam = {
+			    x: 0,//the x position of the camera
+			    y: 0,//the y position of the camera
+			};
+			var levelBitmaps = [
+                /*
+                # = block;
+                p = portal;
+                l = lava;
+                */
+				[
+					
+					"###########################################################################################",
+					"#                                                                                         #",
+					"#                                                                                         #",
+					"#                                                                                         #",
+					"#                                                                                         #",
+					"#                                                                                         #",
+					"#                                                                                         #",
+					"#                                                                                         #",
+					"#                                                                                         #",
+					"#                                                                                         #",
+					"#          ####      ####                 ####    ####                     ####           #",
+					"#                                                                  ####                   #",
+					"#   ####                   ####    ####                    ####                           #",
+					"#@                                                                                       p#",
+					"###llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll##",
+				],
+                [
+                    "@        p",
+                    "##########"
+                ],
+					 [
+					 	"@",
+					 	"###############                       ##################     ",
+						"                      ##############                            #####################",
+						
+					 ],
+			];//the level bitmaps
+			var rectCollision = function(obj1, obj2) {
+				return obj1.x + blockSize > obj2.x &&
+				obj1.x < obj2.x + blockSize &&
+				obj1.y + blockSize > obj2.y &&
+				obj1.y < obj2.y + blockSize;
+			};//returns true if there is a collision
+			var Player = function() {
+				this.x = 0;//the x position of the player
+				this.y = 0;//the y position of the player
+				this.xv = 0;//the x velocity of the player
+				this.yv = 0;//the y velocity of the player
+			};
+			Player.prototype.moveX = function() {
+				if(keys[LEFT]) {//if the left arrow key is pressed
+					this.xv -= 0.4;//make the player go to the left
+				}
+				if(keys[RIGHT]) {//if the right arrow key is pressed
+					this.xv += 0.4//make the player go to the right
+				}
+				this.x += Math.round(this.xv);//makes the x position of the player change according to its velocity
+				this.xv *= 0.9;//friction
+			};
+			Player.prototype.moveY = function() {
+				if(keys[UP] && player.yv === 0) {//if the up arrow key is pressed
+					this.yv = -8;//make the player jump
+				}
+				this.yv += 0.4;//gravity
+				this.y += Math.round(this.yv);//makes the y position of the player change according to its velocity
+			};
+			Player.prototype.display = function() {
+				ctx.fillStyle = "gray";//basicly fill()
+				ctx.fillRect(this.x, this.y, blockSize, blockSize);//rect(this.x, this.y, blockSize, blockSize);
+			};
+			var player = new Player();//makes a new player
+			
+            var Block = function(x, y) {
+				this.x = x;//the x position of the block
+				this.y = y;//the y position of the block
+            };
+            Block.prototype.collideX = function() {
+				if(rectCollision(this, player)) {//if there is a collision
+					if(player.xv > 0) {//if the x velocity of the player is greater than 0, that means that the player is colliding from the left side of the block
+						player.x = this.x - blockSize;//make the player go to the left side of the block
+					}
+					if(player.xv < 0) {//if the x velocity of the player is less than 0, that means that the player is colliding from the right side of the block
+						player.x = this.x + blockSize;//make the player go to the right side of the block
+					}
+					player.xv = 0;//makes the players x velocity 0
+				}
+			};
+			Block.prototype.collideY = function() {
+				if(rectCollision(this, player)) {//if there is a collision
+					if(player.yv > 0) {//if the y velocity of the player is greater than 0, that means that the player is colliding from the top
+						player.y = this.y - blockSize;//makes the player go to the top of the block
+						player.yv = 0;//make the player allowed to stay on the block
+					}
+					if(player.yv < 0) {//if the player hit there head
+						player.y = this.y + blockSize;//make the player go to the bottom of the block
+						player.yv = 0.1;//makes the player fall (ouch)
+					}
+				}
+			
+            };
+			Block.prototype.display = function() {
+				ctx.fillStyle = "rgb(0, 0, 0)";//fill(0, 0, 0);
+				ctx.fillRect(this.x, this.y, blockSize, blockSize);//rect(this.x, this.y, blockSize, blockSize);
+			};
+			var Lava = function(x, y) {
+				this.x = x;//the x position of the lava
+				this.y = y;//the y position of the lava
+            };
+			Lava.prototype.collide = function() {
+				if(rectCollision(this, player)) {//if there is a collision
+					loadLev = true;//make the player restart the level
+				}
+			};
+			Lava.prototype.display = function() {
+				ctx.fillStyle = "red";//fill(255, 0, 0);
+				ctx.fillRect(this.x, this.y, blockSize, blockSize);//rect(this.x, this.y, blockSize, blockSize);
+			};
+			var Portal = function(x, y) {
+				this.x = x;//the x position of the portal
+				this.y = y;//the y position of the portal
+            };
+			Portal.prototype.collide = function() {
+				if(rectCollision(this, player)) {//if there is a collision
+					loadLev = true;//make the player restart the next level
+					currentLevel ++;//make the level increase
+				}
+			};
+			Portal.prototype.display = function() {
+				ctx.fillStyle = "rgb(0, 255, 255)";//fill(0, 255, 255);
+				ctx.fillRect(this.x, this.y, blockSize, blockSize);//rect(this.x, this.y, blockSize, blockSize);
+			};
+			var loadLevel = function() {
+				blocks = [];//clears the blocks array from the other levels (or the current level)
+				lavas = [];//clears the lavas array from the other levels (or the current level)
+				portals = [];//clears the portals array from the other levels (or the current level)
+				for(var i = 0; i < levelBitmaps[currentLevel].length; i ++) {//gets "" in the the current level
+					for(var j = 0; j < levelBitmaps[currentLevel][i].length; j ++) {//gets stuff inside the "" in the current level
+						var X = j * blockSize;//shortcut for j * blockSize
+						var Y = i * blockSize;//shortcut for i * blockSize
+						switch(levelBitmaps[currentLevel][i][j]) {//finds stuff using i and j
+							case "#"://if the computer finds a "#", do this:
+								blocks.push(new Block(X, Y));//puts a new block in the blocks array
+								break;//end this case
+							case "l"://if the computer finds a "l", do this:
+								lavas.push(new Lava(X, Y));//puts a new lava in the lavas array
+								break;
+							case "p"://if the computer finds a "p", do this:
+								portals.push(new Portal(X, Y));//puts a new portal in the portals array
+								break;
+							case "@":
+								player.x = X;//make the players x position to X
+								player.y = Y;//make the players y position to Y
+						}
+					}
+				}
+			};
+			loadLevel();//load the level
+			setInterval(function() {
+				try{//try this stuff:
+				    ctx.save();//pushMatrix();
+				    ctx.fillStyle = "white";
+					ctx.fillRect(0, 0, canvas.width, canvas.height);//background(0, 0, 0, 0);
+					
+				    cam.x = cam.x + (player.x - cam.x) * 0.1;//cam.x = lerp(cam.x, player.x, 0.1);
+				    cam.y = cam.y + (player.y - cam.y) * 0.1;//cam.y = lerp(cam.y, player.y, 0.1);
+				    ctx.translate(canvas.width / 2 - cam.x, canvas.height / 2 - cam.y);//translate(width / 2 - cam.x, height / 2 - cam.y)
+					player.moveX();//makes the player allowed to move
+					for(var i = 0; i < blocks.length; i ++) {//gets all of the blocks
+						blocks[i].collideX();//makes all of the blocks collidable
+					}
+					player.moveY();//makes the player allowed to move
+					for(var i = 0; i < blocks.length; i ++) {//gets all of the blocks
+						blocks[i].collideY();//makes all of the blocks collidable
+					}
+					player.display();//makes the player appear
+					for(var i = 0; i < blocks.length; i ++) {//gets all of the blocks
+						blocks[i].display();//makes all of the blocks appear
+					}
+					if(loadLev) {//if the computer needs to load the level
+						loadLevel();//load the level
+						loadLev = false;//make the computer not load the level again
+					}
+					for(var i = 0; i < lavas.length; i ++) {//gets all of the lavas
+						lavas[i].display();//makes all of the lavas appear
+						lavas[i].collide();//makes all of the lavas collidable
+					}
+					for(var i = 0; i < portals.length; i ++) {
+						portals[i].display();//displays all of the portals
+						portals[i].collide();//makes all of the portals collidable
+					}
+					ctx.restore();//popMatrix();
+					ctx.fillStyle = "black";
+					ctx.textAlign = "left";
+					ctx.textBaseline = "bottom";
+					ctx.font = "16px sans-serif";
+					//ctx.fillText("©2020 company inc", 0, canvas.height);
+				} catch(err) {//if the computer catches a error
+					console.error(err);//make a error in the console
+				}
+			}, 1000 / 60);//1000 miliseconds is 1 second / 60 = 60 frames per second
+			body.addEventListener("keydown", function(event) {//keyReleased = function() {};
+				event.preventDefault();//makes the page not scroll down if a key is pressed
+				keys[event.keyCode] = true;//makes keys true
+			});
+			body.addEventListener("keyup", function(event) {//keyPressed = function() {};
+				event.preventDefault();//makes the page not scroll down if a key is released
+				keys[event.keyCode] = false;//makes keys false
+			});
+		</script><!--the game code-->
+	</body>
 </html>
