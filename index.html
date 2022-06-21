@@ -83,7 +83,7 @@
         this.yv += 0.4;
         this.y += Math.round(this.yv);
         if(this.y >= (levelBitmaps[currentLevel].length * blockSize)) {
-            loadLevel = false;
+            loadLevel = true;
         }
     };
     Player.prototype.display = function() {
@@ -176,7 +176,7 @@
         }
     };
     loadLevel();
-    setInterval(function() {
+    var in = setInterval(function() {
         try{
             ctx.save();
             ctx.fillStyle = "white";
@@ -215,6 +215,7 @@
             ctx.font = "16px sans-serif";
         } catch(err) {
             console.error(err);
+            clearInterval(in)
         }
     }, 1000 / 60);
     body.addEventListener("keydown", function(event) {
