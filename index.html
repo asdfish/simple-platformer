@@ -176,7 +176,7 @@
         }
     };
     loadLevel();
-    var in = setInterval(function() {
+    var i = setInterval(function() {
         try{
             ctx.save();
             ctx.fillStyle = "white";
@@ -215,7 +215,7 @@
             ctx.font = "16px sans-serif";
         } catch(err) {
             console.error(err);
-            clearInterval(in)
+            clearInterval(i)
         }
     }, 1000 / 60);
     body.addEventListener("keydown", function(event) {
