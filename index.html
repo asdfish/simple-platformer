@@ -14,10 +14,10 @@
         blocks = [];
         lavas = [];
         portals = [];
-        for(let i = 0; i < levelBitmaps[currentLevel].length; i ++) {
-            for(let j = 0; j < levelBitmaps[currentLevel][i].length; j ++) {
-                let X = j * blockSize;
-                let Y = i * blockSize;
+        for(var i = 0; i < levelBitmaps[currentLevel].length; i ++) {
+            for(var j = 0; j < levelBitmaps[currentLevel][i].length; j ++) {
+                var X = j * blockSize;
+                var Y = i * blockSize;
                 switch(levelBitmaps[currentLevel][i][j]) {
                     case "#":
                         blocks.push(new Block(X, Y));
@@ -35,7 +35,7 @@
             }
         }
     };
-            let canvas = document.getElementById("canvas");
+            var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
     var body = document.body;
     var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39;
@@ -45,13 +45,13 @@
     var lavas = [];
     var portals = [];
     var currentLevel = 0;
-    let loadLev = false;
-    let blockSize = 10;
-    let cam = {
+    var loadLev = false;
+    var blockSize = 10;
+    var cam = {
         x: 0,
         y: 0,
     };
-    let levelBitmaps = [
+    var levelBitmaps = [
         /*
                       # = block;
                       p = portal;
@@ -81,13 +81,13 @@
             "                ##################                                        #",
         ]
     ];
-    let rectCollision = function(obj1, obj2) {
+    var rectCollision = function(obj1, obj2) {
         return obj1.x + blockSize > obj2.x &&
             obj1.x < obj2.x + blockSize &&
             obj1.y + blockSize > obj2.y &&
             obj1.y < obj2.y + blockSize;
     };
-    let Player = function() {
+    var Player = function() {
         this.x = 0;
         this.y = 0;
         this.xv = 0;
@@ -117,8 +117,8 @@
         ctx.fillStyle = "gray";
         ctx.fillRect(this.x, this.y, blockSize, blockSize);
     };
-    let player = new Player();
-    let Block = function(x, y) {
+    var player = new Player();
+    var Block = function(x, y) {
         this.x = x;
         this.y = y;
     };
@@ -150,7 +150,7 @@
         ctx.fillStyle = "rgb(0, 0, 0)";
         ctx.fillRect(this.x, this.y, blockSize, blockSize);
     };
-    let Lava = function(x, y) {
+    var Lava = function(x, y) {
         this.x = x;
         this.y = y;
     };
@@ -163,7 +163,7 @@
         ctx.fillStyle = "red";
         ctx.fillRect(this.x, this.y, blockSize, blockSize);
     };
-    let Portal = function(x, y) {
+    var Portal = function(x, y) {
         this.x = x;
         this.y = y;
     };
@@ -187,26 +187,26 @@
             cam.y = cam.y + (player.y - cam.y) * 0.1;
             ctx.translate(canvas.width / 2 - cam.x, canvas.height / 2 - cam.y);
             player.moveX();
-            for(let i = 0; i < blocks.length; i ++) {
+            for(var i = 0; i < blocks.length; i ++) {
                 blocks[i].collideX();
             }
             player.moveY();
-            for(let i = 0; i < blocks.length; i ++) {
+            for(var i = 0; i < blocks.length; i ++) {
                 blocks[i].collideY();
             }
             player.display();
-            for(let i = 0; i < blocks.length; i ++) {
+            for(var i = 0; i < blocks.length; i ++) {
                 blocks[i].display();
             }
             if(loadLev) {
                 loadLevel();
                 loadLev = false;
             }
-            for(let i = 0; i < lavas.length; i ++) {
+            for(var i = 0; i < lavas.length; i ++) {
                 lavas[i].display();
                 lavas[i].collide();
             }
-            for(let i = 0; i < portals.length; i ++) {
+            for(var i = 0; i < portals.length; i ++) {
                 portals[i].display();
                 portals[i].collide();
             }
