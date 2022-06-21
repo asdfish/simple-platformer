@@ -6,14 +6,21 @@ every space in the string counts as a empty space<br>
 "#" is for a solid block<br>
 "l" is a kill block that sends the player back to the start of the level<br>
 "p" is a portal that sends the player to the next level<br>
-[<br>
-  [<br>
-    "################",<br>
-    "#              #",<br>
-    "#              #",<br>
-    "#              #",<br>
-    "#              #",<br>
-    "#@            p#",<br>
-    "########l#######",<br>
-  ],<br>
-]<br>
+
+```
+[
+  //this would be level 1
+  [
+    "############",
+    "#          #",
+    "#          #",
+    "#@        p#",
+    "######l#####",
+  ],
+  //level 2
+  [
+    "@",
+    "#"
+  ],
+]
+```
