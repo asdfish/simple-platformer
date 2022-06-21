@@ -7,6 +7,8 @@
 <body>
     <canvas id = "canvas" width = "600" height = "400" style = "position: absolute;left: 0px;top:0px;"></canvas>
 <script>
+        {
+            
     
     var loadLevel = function() {
         blocks = [];
@@ -33,17 +35,16 @@
             }
         }
     };
-        {
             let canvas = document.getElementById("canvas");
-    let ctx = canvas.getContext("2d");
-    let body = document.body;
-    let UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39;
+    var ctx = canvas.getContext("2d");
+    var body = document.body;
+    var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39;
 
-    let keys = [];
-    let blocks = [];
-    let lavas = [];
-    let portals = [];
-    let currentLevel = 1;
+    var keys = [];
+    var blocks = [];
+    var lavas = [];
+    var portals = [];
+    var currentLevel = 0;
     let loadLev = false;
     let blockSize = 10;
     let cam = {
